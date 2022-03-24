@@ -1,94 +1,129 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import UserInfo from "../components/payment/UserInfo";
-import Payment from "../components/payment/Payment";
-import CalPayment from "../components/payment/CalPayment";
-import Login from "../components/payment/Login";
-import Join from "../components/payment/Join";
-import contextRoot from "../../config/contextRoot";
-import SmartContract from "../components/blockchain/views/SmartContract"
-import Wallet from "../components/blockchain/views/Wallet"
-import FT from "../components/blockchain/views/FT"
-import UnreceivedToken from "../components/blockchain/views/UnreceivedToken"
-import NFT from "../components/blockchain/views/NFT"
-import TxHistory from "../components/blockchain/views/TxHistory"
 
-Vue.use(Router)
+import Login from '@/pages/Login';
+import Main from '@/pages/Main';
+import characters from '@/pages/Characters';
+import PlayInfo from '@/pages/PlayInfo';
+import Item from '@/pages/Item';
+import payment from '@/pages/Payment';
+import List from '@/pages/board/List';
+import View from '@/pages/board/View';
+import Write from '@/pages/board/Write';
+import Inspection from '@/pages/Inspection';
+import Statistics from '@/pages/Statistics';
+import UserAuthority from '@/pages/UserAuthority';
+import NotFound from '@/pages/NotFound';
+
+import store from '@/store';
+import contextRoot from '../../config/contextRoot';
+
+Vue.use(Router);
+
+const userAuth = (next) => {
+  console.log(store.getters['userStore/GET_LOGIN'])
+  next();
+};
 
 // export default new Router({
 const router = new Router({
   // base: "/",
   routes: [
     { 
-      path: contextRoot+"/", 
-      name: "Login", 
-      component: Login 
+      path: '*', 
+      component: NotFound,
     },
     { 
-      path: contextRoot+"/join", 
-      name: "Join", 
-      component: Join 
+      path : `${contextRoot}/`, 
+      name : 'Login', 
+      component : Login
     },
     { 
-      path: contextRoot+"/paymentList", 
-      name: "Payment", 
-      component: Payment 
+      path : `${contextRoot}/main`, 
+      name : 'Main', 
+      component : Main
+    },
+    {
+      path : `${contextRoot}/characters`,
+      name : 'Characters',
+      component : characters
+    },
+    {
+      path : `${contextRoot}/playInfo`,
+      name : 'PlayInfo',
+      component : PlayInfo
+    },
+    {
+      path : `${contextRoot}/item`,
+      name : 'Item',
+      component : Item
     },
     { 
-      path: contextRoot+"/calPayment", 
-      name: "CalPayment", 
-      component: CalPayment 
+      path : `${contextRoot}/payment`, 
+      name : 'Payment', 
+      component : payment
     },
-    { 
-      path: "*", 
-      redirect: contextRoot + "/" 
+    {
+      path : `${contextRoot}/board/:boName/:page`,
+      name : 'BoardList',
+      component : List
     },
-    { 
-      path: contextRoot + "/smartContract", 
-      name: "SmartContract", 
-      component: SmartContract 
-    },    
-    { 
-      path: contextRoot + "/wallet",
-      name: "Wallet",
-      component: Wallet 
+    {
+      path : `${contextRoot}/board/:boName/view/:wrid`,
+      name : 'BoardView',
+      component : View
     },
-    { 
-      path: contextRoot + "/ft",
-      name: "FT",
-      component: FT 
+    {
+      path : `${contextRoot}/board/:boName/write`,
+      name : 'BoardWrite',
+      component : Write
     },
-    { 
-      path: contextRoot + "/unreceivedToken",
-      name: "UnreceivedToken",
-      component: UnreceivedToken 
+    {
+      path : `${contextRoot}/inspection`,
+      name : 'Inspection',
+      component : Inspection
     },
-    { 
-      path: contextRoot + "/nft",
-      name: "NFT",
-      component: NFT 
+    {
+      path : `${contextRoot}/statistics`,
+      name : 'Statistics',
+      component : Statistics
     },
-    { 
-      path: contextRoot + "/txHistory",
-      name: "TxHistory",
-      component: TxHistory 
-    },
-    { 
-      path: `${contextRoot}/userInfo`,
-      name: "UserInfo",
-      component: UserInfo
+    {
+      path : `${contextRoot}/userAuthority`,
+      name : 'UserAuthority',
+      component : UserAuthority
     }
   ],
-  mode: "history"
+  mode: 'history'
 })
 
-router.beforeEach ((to, from, next) => {
-  if (to.fullPath == contextRoot + '/') {
-    // route to login page
-    next();
+router.beforeEach ( async (to, from, next) => {
+  await store.dispatch('userStore/ACTION_USERINFO')
+  .then((res) => {
+    if (!res.data.login) {
+      localStorage.removeItem('access_token');
+    }
+    store.commit('userStore/MUTATE_UESER', res.data);
+  })
+  .catch((e) => {
+    localStorage.removeItem('access_token');
+    store.commit('userStore/MUTATE_LOGIN_ERROR', res.response.reason);
+  });
+  const login = store.getters['userStore/GET_LOGIN'];
+  if (login) {
+    if (to.fullPath == `${contextRoot}/`) {
+      const pushName = from.name ? from.name : 'Payment';
+      next({
+        name : pushName
+      });
+    }
   } else {
-    // route to other pages
-    Vue.nextTick(() => router.app.$children[0].loginChk(to, from, next));    
+    if (to.fullPath != `${contextRoot}/`) {
+      next({
+        name : "Login"
+      })
+    }
   }
+  next();
 });
 export default router;

@@ -89,7 +89,7 @@
               <td>{{item.transactionId}}</td>   
               <td>{{item.responseMessage}}</td>          
               <td>
-              <a href="" @click.prevent="delConfirm(item.orderId, item.status)" v-if="item.status == 'A'"><font color="red">결제취소</font></a>
+                <a href="" @click.prevent="delConfirm(item.orderId, item.status)" v-if="item.status == 'A'"><font color="red">결제취소</font></a>
               </td>        
             </tr>
           </tbody>
@@ -221,18 +221,19 @@ export default {
   },
   created () {
 	  // 코드 셋팅
-    selectCode("service_code_infos","","","","ALL").then(res => {
-    	this.serviceCodeInfos = res.data
-	  }).catch(err => {console.log(err.response)})
-    selectCode("status_infos","","","","ALL").then(res => {
-    	this.statusInfos = res.data
-	  }).catch(err => {console.log(err.response)})
-    selectCode("paytype_infos","","","","ALL").then(res => {
-    	this.paymentTypeInfos = res.data
-	  }).catch(err => {console.log(err.response)})
+    // selectCode("service_code_infos","","","","ALL").then(res => {
+    // 	this.serviceCodeInfos = res.data
+	  // }).catch(err => {console.log(err.response)})
+    // selectCode("status_infos","","","","ALL").then(res => {
+    // 	this.statusInfos = res.data
+	  // }).catch(err => {console.log(err.response)})
+    // selectCode("paytype_infos","","","","ALL").then(res => {
+    // 	this.paymentTypeInfos = res.data
+	  // }).catch(err => {console.log(err.response)})
 	
-    this.userEmail = localStorage.getItem("userEmail")
-    this.getPayments();
+    // this.userEmail = localStorage.getItem("userEmail")
+    // this.getPayments();
+    console.log(this.$store.state)
   },
   methods: {
     search() {
